@@ -5,7 +5,8 @@ INSTALL = ~/bin
 
 all: ssr ssw ssmeta
 
-clean: ssr ssw ssmeta
+clean:
+	rm -f ssr ssw ssmeta
 
 install:
 	cp ssr    $(INSTALL)
