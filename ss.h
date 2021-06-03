@@ -17,7 +17,7 @@ blosc as a static library adds 750kb of size (800 w/ snappy)!
 #define M_BLOSC
 #define M_LINALG
 #define M_BIN2TXT
-#include <mathisart.h>
+#include "mathisart.h"
 
 // ----------------------------------------------------------------------------------------------------------------------------#
 /* @blk1 xcb */
