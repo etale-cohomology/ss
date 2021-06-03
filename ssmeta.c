@@ -42,10 +42,9 @@ int main(int nargs, char* args[]){  setlocale(LC_NUMERIC,"");  struct stat fs;
     i64       img_fmt     = img_fmt_get(img_file->data);
     i64       img_depth   = img_depth_get(img_fmt);
     i64       img_bdim    = img_ndim_w*img_ndim_h * (img_depth/8);
+    size_t    img_dbytes,img_cbytes,img_blocksize; blosc_cbuffer_sizes(img_file->data+IMG_DATA_POS, &img_dbytes,&img_cbytes,&img_blocksize);  //if(img_dbytes > img_bdim){ printf("\x1b[91mFAIL  \x1b[0mGot img bdim \x1b[91m%'ld\x1b[0m, expected img bdim \x1b[94m%'ld\x1b[0m\n", img_dbytes, img_bdim); m_exit_fail(); }
 
-    size_t dbytes,cbytes,blocksize; blosc_cbuffer_sizes(img_file->data+IMG_DATA_POS, &dbytes, &cbytes, &blocksize);  //if(dbytes > img_bdim){ printf("\x1b[91mFAIL  \x1b[0mGot img bdim \x1b[91m%'ld\x1b[0m, expected img bdim \x1b[94m%'ld\x1b[0m\n", dbytes, img_bdim); m_exit_fail(); }
-
-    printf("version \x1b[0m%d  \x1b[0mndim (\x1b[31m%ld\x1b[91m;\x1b[32m%ld\x1b[0m)  \x1b[0mfmt \x1b[37m%ld  \x1b[0mdepth \x1b[35m%ld  \x1b[0mbdim \x1b[94m%'ld  \x1b[0mblosc \x1b[32m%'lu \x1b[91m/ \x1b[0m%'lu  \x1b[0mpath \x1b[92m%s\x1b[0m\n", img_version, img_ndim_w,img_ndim_h, img_fmt,img_depth, img_bdim, cbytes,dbytes, *it);
+    printf("version \x1b[37m%d  \x1b[0mndim (\x1b[31m%ld\x1b[91m;\x1b[32m%ld\x1b[0m)  \x1b[0mfmt \x1b[37m%ld  \x1b[0mdepth \x1b[35m%ld  \x1b[0mbdim \x1b[94m%'9ld  \x1b[0mblosc \x1b[32m%'9lu \x1b[91m/ \x1b[0m%'9lu \x1b[33m%'ld  \x1b[0mpath \x1b[92m%-56s\x1b[0m\n", img_version, img_ndim_w,img_ndim_h, img_fmt,img_depth, img_bdim, img_cbytes,img_dbytes,img_blocksize, *it);
     m_file_free(img_file);
   }
 }

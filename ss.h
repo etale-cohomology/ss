@@ -11,11 +11,8 @@ seconds      per year:  365 * 24 * 60 * 60 * 1e0;  31,536,000;              u64 
 
 blosc as a static library adds 750kb of size (800 w/ snappy)!
 */
-#define M_VEC
 #define M_FILE
 #define M_DIR
-#define M_BLOSC
-#define M_LINALG
 #define M_BIN2TXT
 #include "mathisart.h"
 
@@ -127,12 +124,6 @@ xcb_screen_t* xcb_screen_default(){  // Get the default screen in an xcb_screen_
   return screen;
 }
 
-v2u xcb_screen_dim(){  // Get the dimension vector for the default screen, in pixels!
-  xcb_screen_t* screen     = xcb_screen_default();
-  v2u           screen_dim = (v2u){screen->width_in_pixels, screen->height_in_pixels};
-  return screen_dim;
-}
-
 xcb_format_t* xcb_find_format_by_depth(xcb_connection_t* connection, u8 depth){  // Return `xcb_format_t*`, needed by `xcb_image_create`!
   const xcb_setup_t* setup  = xcb_get_setup(connection);
   xcb_format_t*      fmtini = xcb_setup_pixmap_formats(setup);
@@ -160,14 +151,6 @@ void xcb_meta(xcb_connection_t* connection, int screen_idx){  // xcb_connection_
   printf("\x1b[94mxcb_visualtype_t  \x1b[0mvisualid 0x\x1b[32m%x  \x1b[0mclass \x1b[32m%d  \x1b[0mbits per rgb value \x1b[32m%d  \x1b[0mcolormap nentries \x1b[32m%d\x1b[0m\n", visualtype->visual_id,visualtype->_class,visualtype->bits_per_rgb_value,visualtype->colormap_entries);
   printf("                  \x1b[0mred mask \x1b[32m%s  \x1b[0mgreen mask \x1b[32m%s  \x1b[0mblue mask \x1b[32m%s\x1b[0m\n", bfmt_u32(visualtype->red_mask),bfmt_u32(visualtype->green_mask),bfmt_u32(visualtype->blue_mask));
   putchar(0x0a);
-}
-
-u32 xcb_window_init_back_pixmap(xcb_connection_t* connection, xcb_screen_t* screen, v2u win_dim, u32 win_event_mask){
-  u32 window_xid = xcb_generate_id(connection);
-  xcb_create_window(connection, screen->root_depth, window_xid, screen->root, 0,0,win_dim.w,win_dim.h, 0,XCB_WINDOW_CLASS_INPUT_OUTPUT, screen->root_visual, XCB_CW_BACK_PIXMAP|XCB_CW_EVENT_MASK, (u32[]){XCB_BACK_PIXMAP_NONE, win_event_mask});  // The values of this array MUST match the order of the enum where all the masks are defined!
-  xcb_map_window(connection, window_xid);
-  xcb_flush(connection);
-  return window_xid;
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------#
@@ -459,6 +442,123 @@ void xcb_shimg_free(xcb_shimg_t* shimg){
   xcb_shm_detach(shimg->connection, shimg->info.shmseg);
   i64 st=shmdt(shimg->info.shmaddr);  m_chks(st);
   free(shimg);
+}
+
+// ----------------------------------------------------------------------------------------------------------------------------#
+/* @blk1  M_BLOSC  Compression library, based on the AWESOME c-blosc!
+
+Blosc is a replacement for memcpy()! It has a 0 compression level that does not compress at all w/ very little overhead. Blosc can even copy memory faster than a plain memcpy() because it uses multi-threading
+cd $git/c-blosc && mkdir build
+cd $git/c-blosc/build && cmake -DCMAKE_INSTALL_PREFIX="/usr/" -DSHUFFLE_AVX2_ENABLED=1 .. && cmake -- build . && sudo cmake --build . --target install
+*/
+#include <blosc.h>
+
+typedef struct{
+  u8* extension;
+  u8* name;
+  int level;
+  int shuffle;
+}m_blosc_compressor_t;
+
+typedef struct{
+  u8* compressor;
+  int nthreads;
+  int level;
+  int shuffle;
+  int splitmode;     // Currently unused!
+
+  i64 dbytes;        // Decompressed bdim!
+  i64 cbytes;        // Compressed bdim!
+  i64 blocksize;     // A critical parameter to blosc performance!
+
+  u8* ddata;         // Decompressed data!
+  u8* cdata;         // Compressed data!
+  int ddata_malloc;  // A flag that indicates ownership; ie. if we own the data, then we must free it!
+  int cdata_malloc;  // A flag that indicates ownership; ie. if we own the data, then we must free it!
+}m_blosc_t;
+
+m_blosc_t* m_blosc_init(u8* compressor, int level, int shuffle, int nthreads){
+  blosc_init();
+  blosc_set_nthreads(nthreads);
+  blosc_set_compressor(compressor);  // BLOSC_ALWAYS_SPLIT cuts compression time for zstd by 50% (w/ a small size penalty), but it doesn't reduce decompression time!
+  // blosc_set_splitmode(BLOSC_ALWAYS_SPLIT);  // BLOSC_FORWARD_COMPAT_SPLIT, BLOSC_AUTO_SPLIT, BLOSC_ALWAYS_SPLIT, BLOSC_NEVER_SPLIT
+
+  m_blosc_t* blosc    = malloc(sizeof(m_blosc_t));
+  blosc->compressor   = compressor;
+  blosc->nthreads     = blosc_get_nthreads();
+  blosc->level        = level;
+  blosc->shuffle      = shuffle;
+  blosc->dbytes       = 0;
+  blosc->cbytes       = 0;
+  blosc->blocksize    = 0;
+  blosc->ddata        = NULL;
+  blosc->cdata        = NULL;
+  blosc->ddata_malloc = 0;
+  blosc->ddata_malloc = 0;
+  return blosc;
+}
+
+void m_blosc_free(m_blosc_t* blosc){
+  blosc_destroy();
+  if(blosc->ddata_malloc) free(blosc->ddata);
+  // if(blosc->cdata_malloc) free(blosc->cdata);
+  free(blosc);
+}
+
+void m_blosc_meta(m_blosc_t* blosc){
+  m_sep();
+  printf("%-16s %s %s\n",  "c-blosc",        BLOSC_VERSION_STRING, BLOSC_VERSION_DATE);
+  printf("%-16s \"%s\"\n", "compressor",     blosc->compressor);
+  printf("%-16s %d\n",     "nthreads",       blosc->nthreads);
+  printf("%-16s %d\n",     "level",          blosc->level);
+  printf("%-16s %d\n",     "shuffle",        blosc->shuffle);
+  printf("%-16s %'d\n",    "max_buffersize", BLOSC_MAX_BUFFERSIZE);
+}
+
+void m_blosc_compress(m_blosc_t* blosc, u64 typesize, u64 bdim, void* ddata/*@input*/, void* cdata/*@output*/){
+  blosc->dbytes = bdim;
+  blosc->ddata  = ddata;
+
+  if(cdata==NULL){
+    blosc->cdata        = aligned_alloc(0x1000,blosc->dbytes);
+    blosc->cdata_malloc = 1;
+  }else{
+    blosc->cdata        = cdata;
+    blosc->ddata_malloc = 0;
+  }
+
+  // dt_t t; dt_ini(&t);
+  blosc->cbytes = blosc_compress(blosc->level,blosc->shuffle, typesize, blosc->dbytes,blosc->ddata/*@input*/, blosc->cdata/*@output*/,blosc->dbytes);
+  // dt_end(&t);  printf("%-24s", "blosc_compress()");  dt_show(&t);
+
+  // blosc->cbytes = blosc_compress_ctx(int clevel, int doshuffle, size_t typesize, size_t bdim, const void* src, void* dest, size_t destsize, const char* compressor, size_t blocksize, int numinternalthreads);
+
+  // printf("  dbytes \x1b[32m%'lu\x1b[0m\n", blosc->dbytes);  // printf("%-24s  dbytes \x1b[32m%'lu\x1b[0m\n", "blosc_compress", blosc->dbytes);
+  // printf("  cbytes \x1b[94m%'ld\x1b[0m\n", blosc->cbytes);  // printf("%-24s  cbytes \x1b[94m%'ld\x1b[0m\n", "blosc_compress", blosc->cbytes);
+  if(blosc->cbytes<0)  m_exit_fail();
+}
+
+void m_blosc_decompress(m_blosc_t* blosc, u8* cdata/*@input*/, u8* ddata/*@output*/){
+  blosc->cdata = cdata;
+  blosc_cbuffer_sizes(blosc->cdata, &blosc->dbytes, &blosc->cbytes, &blosc->blocksize);
+
+  if(ddata==NULL){
+    blosc->ddata        = aligned_alloc(0x1000,blosc->dbytes);
+    blosc->ddata_malloc = 1;
+  }else{
+    blosc->ddata        = ddata;
+    blosc->ddata_malloc = 0;
+  }
+
+  // dt_t t; dt_ini(&t);
+  i32 bdim_decompress = blosc_decompress(blosc->cdata/*@input*/, blosc->ddata/*@output*/, blosc->dbytes);
+  // dt_end(&t);  printf("%-24s", "blosc_decompress()");  dt_show(&t);
+
+  // printf("  dbytes    \x1b[32m%'ld\x1b[0m / \x1b[35m%'d\x1b[0m\n", blosc->dbytes, bdim_decompress);
+  // printf("  cbytes    \x1b[94m%'ld\x1b[0m\n",                      blosc->cbytes);
+  // printf("  blocksize \x1b[33m%'ld\x1b[0m\n",                      blosc->blocksize);  // printf("%-24s  blocksize \x1b[33m%'ld\x1b[0m\n", "blosc_decompress", blosc->blocksize);
+  if(bdim_decompress<0)              m_exit_fail();
+  if(bdim_decompress!=blosc->dbytes) m_exit_fail();
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------#
