@@ -84,7 +84,7 @@ int main(int nargs, char* args[]){  setlocale(LC_NUMERIC,"");  struct stat fs;
   xcb_gcontext_t xcb_gc_null = xcb_generate_id(xcb_connection);
   xcb_create_gc(xcb_connection, xcb_gc_null, xcb_screen->root, XCB_GC_GRAPHICS_EXPOSURES, (u32[]){XCB_EXPOSURES_NOT_ALLOWED});  // XCB_GC_GRAPHICS_EXPOSURES:XCB_EXPOSURES_NOT_ALLOWED means this graphics context generates no exposure events! TRY IT! Does this affect performance, at all?
 
-  int        nthreads = sysconf(_SC_NPROCESSORS_ONLN)/2;
+  int        nthreads = m_max(sysconf(_SC_NPROCESSORS_ONLN)/2, 1);
   m_blosc_t* blosc    = m_blosc_init(compressor.name, compressor.level, compressor.shuffle, nthreads);
   dt_end(&dt0);
 

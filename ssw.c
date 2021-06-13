@@ -16,10 +16,9 @@ int main(int nargs, char* args[]){  setlocale(LC_NUMERIC,"");  i64 st;
   int xcb_screen_idx;
   xcb_connection_t* xcb_connection = xcb_connect(NULL, &xcb_screen_idx);  int xcb_st=xcb_connection_has_error(xcb_connection); if(xcb_st>0) printf("\x1b[31mWARN  \x1b[32mxcb  \x1b[91m%s  \x1b[0m\n", XCB_LUT_CONN_ERRORS[xcb_st]);
   xcb_screen_t*     xcb_screen     = xcb_screen_get(xcb_connection, xcb_screen_idx);
-  v2u               win_ndim       = {xcb_screen->width_in_pixels>>0, xcb_screen->height_in_pixels>>0};
-  xcb_shimg_t*      xcb_shimg      = xcb_shimg_init(xcb_connection, xcb_screen, win_ndim.w, win_ndim.h,xcb_screen->root_depth==24?32:xcb_screen->root_depth);
+  xcb_shimg_t*      xcb_shimg      = xcb_shimg_init(xcb_connection, xcb_screen, xcb_screen->width_in_pixels, xcb_screen->height_in_pixels,xcb_screen->root_depth==24?32:xcb_screen->root_depth);
 
-  int        nthreads = sysconf(_SC_NPROCESSORS_ONLN)/2;
+  int        nthreads = m_max(sysconf(_SC_NPROCESSORS_ONLN)/2, 1);
   m_blosc_t* blosc    = m_blosc_init(compressor.name, compressor.level, compressor.shuffle, nthreads);
 
   char imgpath[PATH_MAX+1] = {0x00};
@@ -41,7 +40,7 @@ int main(int nargs, char* args[]){  setlocale(LC_NUMERIC,"");  i64 st;
   dt_end(&dt2);
 
   dt_t dt3; dt_ini(&dt3);
-  img_header_t header = {magic:IMG_MAGIC, version:IMG_VERSION, ndim_w:win_ndim.x,ndim_h:win_ndim.y, fmt:xcb_screen->root_depth==16 ? IMG_FMT_BGR565 : IMG_FMT_BGRA8888};  assert(sizeof(img_header_t)==0x40);
+  img_header_t header = {magic:IMG_MAGIC, version:IMG_VERSION, ndim_w:xcb_screen->width_in_pixels,ndim_h:xcb_screen->height_in_pixels, fmt:xcb_screen->root_depth==16 ? IMG_FMT_BGR565 : IMG_FMT_BGRA8888};  assert(sizeof(img_header_t)==0x40);
   int fd=open(imgpath, O_RDWR|O_CREAT, 0b110000000);  m_chks(fd);
   m_chks(ftruncate(fd, sizeof(img_header_t) + blosc->cbytes));
   st=write(fd, &header,      sizeof(img_header_t));  m_chk(-(st!=sizeof(img_header_t)));  // Faster than m_outbuf_t init/write/free for one-time writes! Mem maps perform worse when searching many small files in parallel, but perform better on searching single large files!  // m_outbuf_t* out=m_outbuf_init(imgpath,blosc->cbytes);  m_outbuf_write(out,blosc->cdata); m_outbuf_free(out);
