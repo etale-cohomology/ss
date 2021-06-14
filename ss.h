@@ -11,10 +11,7 @@ seconds      per year:  365 * 24 * 60 * 60 * 1e0;  31,536,000;              u64 
 
 blosc as a static library adds 750kb of size (800 w/ snappy)!
 */
-#define M_FILE
-#define M_DIR
-#define M_BIN2TXT
-#include "mathisart.h"
+#include "mathisart2.h"
 
 // ----------------------------------------------------------------------------------------------------------------------------#
 /* @blk1 xcb */
@@ -91,6 +88,16 @@ char* XCB_LUT_CONN_ERRORS[] = {
   [XCB_CONN_CLOSED_INVALID_SCREEN]   = "XCB_CONN_CLOSED_INVALID_SCREEN",    // because the server does not have a screen matching the display.
 };
 
+minternal char* XCB_LUT_ERRORS_CSTR[]  = {[XCB_REQUEST]="XCB_REQUEST",[XCB_VALUE]="XCB_VALUE",[XCB_WINDOW]="XCB_WINDOW",[XCB_PIXMAP]="XCB_PIXMAP",[XCB_ATOM]="XCB_ATOM",[XCB_CURSOR]="XCB_CURSOR",[XCB_FONT]="XCB_FONT",[XCB_MATCH]="XCB_MATCH",[XCB_DRAWABLE]="XCB_DRAWABLE",[XCB_ACCESS]="XCB_ACCESS",[XCB_ALLOC]="XCB_ALLOC",[XCB_COLORMAP]="XCB_COLORMAP",[XCB_G_CONTEXT]="XCB_G_CONTEXT",[XCB_ID_CHOICE]="XCB_ID_CHOICE",[XCB_NAME]="XCB_NAME",[XCB_LENGTH]="XCB_LENGTH",[XCB_IMPLEMENTATION]="XCB_IMPLEMENTATION"};
+minternal char* XCB_LUT_OPCODES_CSTR[] = {[XCB_CREATE_WINDOW]="XCB_CREATE_WINDOW",[XCB_CHANGE_WINDOW_ATTRIBUTES]="XCB_CHANGE_WINDOW_ATTRIBUTES",[XCB_GET_WINDOW_ATTRIBUTES]="XCB_GET_WINDOW_ATTRIBUTES",[XCB_DESTROY_WINDOW]="XCB_DESTROY_WINDOW",[XCB_DESTROY_SUBWINDOWS]="XCB_DESTROY_SUBWINDOWS",[XCB_CHANGE_SAVE_SET]="XCB_CHANGE_SAVE_SET",[XCB_REPARENT_WINDOW]="XCB_REPARENT_WINDOW",[XCB_MAP_WINDOW]="XCB_MAP_WINDOW",[XCB_MAP_SUBWINDOWS]="XCB_MAP_SUBWINDOWS",[XCB_UNMAP_WINDOW]="XCB_UNMAP_WINDOW",[XCB_UNMAP_SUBWINDOWS]="XCB_UNMAP_SUBWINDOWS",[XCB_CONFIGURE_WINDOW]="XCB_CONFIGURE_WINDOW",[XCB_CIRCULATE_WINDOW]="XCB_CIRCULATE_WINDOW",[XCB_GET_GEOMETRY]="XCB_GET_GEOMETRY",[XCB_QUERY_TREE]="XCB_QUERY_TREE",[XCB_INTERN_ATOM]="XCB_INTERN_ATOM",[XCB_GET_ATOM_NAME]="XCB_GET_ATOM_NAME",[XCB_CHANGE_PROPERTY]="XCB_CHANGE_PROPERTY",[XCB_DELETE_PROPERTY]="XCB_DELETE_PROPERTY",[XCB_GET_PROPERTY]="XCB_GET_PROPERTY",[XCB_LIST_PROPERTIES]="XCB_LIST_PROPERTIES",[XCB_SET_SELECTION_OWNER]="XCB_SET_SELECTION_OWNER",[XCB_GET_SELECTION_OWNER]="XCB_GET_SELECTION_OWNER",[XCB_CONVERT_SELECTION]="XCB_CONVERT_SELECTION",[XCB_SEND_EVENT]="XCB_SEND_EVENT",[XCB_GRAB_POINTER]="XCB_GRAB_POINTER",[XCB_UNGRAB_POINTER]="XCB_UNGRAB_POINTER",[XCB_GRAB_BUTTON]="XCB_GRAB_BUTTON",[XCB_UNGRAB_BUTTON]="XCB_UNGRAB_BUTTON",[XCB_CHANGE_ACTIVE_POINTER_GRAB]="XCB_CHANGE_ACTIVE_POINTER_GRAB",[XCB_GRAB_KEYBOARD]="XCB_GRAB_KEYBOARD",[XCB_UNGRAB_KEYBOARD]="XCB_UNGRAB_KEYBOARD",[XCB_GRAB_KEY]="XCB_GRAB_KEY",[XCB_UNGRAB_KEY]="XCB_UNGRAB_KEY",[XCB_ALLOW_EVENTS]="XCB_ALLOW_EVENTS",[XCB_GRAB_SERVER]="XCB_GRAB_SERVER",[XCB_UNGRAB_SERVER]="XCB_UNGRAB_SERVER",[XCB_QUERY_POINTER]="XCB_QUERY_POINTER",[XCB_GET_MOTION_EVENTS]="XCB_GET_MOTION_EVENTS",[XCB_TRANSLATE_COORDINATES]="XCB_TRANSLATE_COORDINATES",[XCB_WARP_POINTER]="XCB_WARP_POINTER",[XCB_SET_INPUT_FOCUS]="XCB_SET_INPUT_FOCUS",[XCB_GET_INPUT_FOCUS]="XCB_GET_INPUT_FOCUS",[XCB_QUERY_KEYMAP]="XCB_QUERY_KEYMAP",[XCB_OPEN_FONT]="XCB_OPEN_FONT",[XCB_CLOSE_FONT]="XCB_CLOSE_FONT",[XCB_QUERY_FONT]="XCB_QUERY_FONT",[XCB_QUERY_TEXT_EXTENTS]="XCB_QUERY_TEXT_EXTENTS",[XCB_LIST_FONTS]="XCB_LIST_FONTS",[XCB_LIST_FONTS_WITH_INFO]="XCB_LIST_FONTS_WITH_INFO",[XCB_SET_FONT_PATH]="XCB_SET_FONT_PATH",[XCB_GET_FONT_PATH]="XCB_GET_FONT_PATH",[XCB_CREATE_PIXMAP]="XCB_CREATE_PIXMAP",[XCB_FREE_PIXMAP]="XCB_FREE_PIXMAP",[XCB_CREATE_GC]="XCB_CREATE_GC",[XCB_CHANGE_GC]="XCB_CHANGE_GC",[XCB_COPY_GC]="XCB_COPY_GC",[XCB_SET_DASHES]="XCB_SET_DASHES",[XCB_SET_CLIP_RECTANGLES]="XCB_SET_CLIP_RECTANGLES",[XCB_FREE_GC]="XCB_FREE_GC",[XCB_CLEAR_AREA]="XCB_CLEAR_AREA",[XCB_COPY_AREA]="XCB_COPY_AREA",[XCB_COPY_PLANE]="XCB_COPY_PLANE",[XCB_POLY_POINT]="XCB_POLY_POINT",[XCB_POLY_LINE]="XCB_POLY_LINE",[XCB_POLY_SEGMENT]="XCB_POLY_SEGMENT",[XCB_POLY_RECTANGLE]="XCB_POLY_RECTANGLE",[XCB_POLY_ARC]="XCB_POLY_ARC",[XCB_FILL_POLY]="XCB_FILL_POLY",[XCB_POLY_FILL_RECTANGLE]="XCB_POLY_FILL_RECTANGLE",[XCB_POLY_FILL_ARC]="XCB_POLY_FILL_ARC",[XCB_PUT_IMAGE]="XCB_PUT_IMAGE",[XCB_GET_IMAGE]="XCB_GET_IMAGE",[XCB_POLY_TEXT_8]="XCB_POLY_TEXT_8",[XCB_POLY_TEXT_16]="XCB_POLY_TEXT_16",[XCB_IMAGE_TEXT_8]="XCB_IMAGE_TEXT_8",[XCB_IMAGE_TEXT_16]="XCB_IMAGE_TEXT_16",[XCB_CREATE_COLORMAP]="XCB_CREATE_COLORMAP",[XCB_FREE_COLORMAP]="XCB_FREE_COLORMAP",[XCB_COPY_COLORMAP_AND_FREE]="XCB_COPY_COLORMAP_AND_FREE",[XCB_INSTALL_COLORMAP]="XCB_INSTALL_COLORMAP",[XCB_UNINSTALL_COLORMAP]="XCB_UNINSTALL_COLORMAP",[XCB_LIST_INSTALLED_COLORMAPS]="XCB_LIST_INSTALLED_COLORMAPS",[XCB_ALLOC_COLOR]="XCB_ALLOC_COLOR",[XCB_ALLOC_NAMED_COLOR]="XCB_ALLOC_NAMED_COLOR",[XCB_ALLOC_COLOR_CELLS]="XCB_ALLOC_COLOR_CELLS",[XCB_ALLOC_COLOR_PLANES]="XCB_ALLOC_COLOR_PLANES",[XCB_FREE_COLORS]="XCB_FREE_COLORS",[XCB_STORE_COLORS]="XCB_STORE_COLORS",[XCB_STORE_NAMED_COLOR]="XCB_STORE_NAMED_COLOR",[XCB_QUERY_COLORS]="XCB_QUERY_COLORS",[XCB_LOOKUP_COLOR]="XCB_LOOKUP_COLOR",[XCB_CREATE_CURSOR]="XCB_CREATE_CURSOR",[XCB_CREATE_GLYPH_CURSOR]="XCB_CREATE_GLYPH_CURSOR",[XCB_FREE_CURSOR]="XCB_FREE_CURSOR",[XCB_RECOLOR_CURSOR]="XCB_RECOLOR_CURSOR",[XCB_QUERY_BEST_SIZE]="XCB_QUERY_BEST_SIZE",[XCB_QUERY_EXTENSION]="XCB_QUERY_EXTENSION",[XCB_LIST_EXTENSIONS]="XCB_LIST_EXTENSIONS",[XCB_CHANGE_KEYBOARD_MAPPING]="XCB_CHANGE_KEYBOARD_MAPPING",[XCB_GET_KEYBOARD_MAPPING]="XCB_GET_KEYBOARD_MAPPING",[XCB_CHANGE_KEYBOARD_CONTROL]="XCB_CHANGE_KEYBOARD_CONTROL",[XCB_GET_KEYBOARD_CONTROL]="XCB_GET_KEYBOARD_CONTROL",[XCB_BELL]="XCB_BELL",[XCB_CHANGE_POINTER_CONTROL]="XCB_CHANGE_POINTER_CONTROL",[XCB_GET_POINTER_CONTROL]="XCB_GET_POINTER_CONTROL",[XCB_SET_SCREEN_SAVER]="XCB_SET_SCREEN_SAVER",[XCB_GET_SCREEN_SAVER]="XCB_GET_SCREEN_SAVER",[XCB_CHANGE_HOSTS]="XCB_CHANGE_HOSTS",[XCB_LIST_HOSTS]="XCB_LIST_HOSTS",[XCB_SET_ACCESS_CONTROL]="XCB_SET_ACCESS_CONTROL",[XCB_SET_CLOSE_DOWN_MODE]="XCB_SET_CLOSE_DOWN_MODE",[XCB_KILL_CLIENT]="XCB_KILL_CLIENT",[XCB_ROTATE_PROPERTIES]="XCB_ROTATE_PROPERTIES",[XCB_FORCE_SCREEN_SAVER]="XCB_FORCE_SCREEN_SAVER",[XCB_SET_POINTER_MAPPING]="XCB_SET_POINTER_MAPPING",[XCB_GET_POINTER_MAPPING]="XCB_GET_POINTER_MAPPING"};
+#define xcb_show_error(ERR)  printf("\x1b[91mFAIL  \x1b[31m%s\x1b[91m:\x1b[32m%d\x1b[91m:\x1b[94m%s  \x1b[0merror \x1b[0m%2d\x1b[91m:\x1b[33m%s  \x1b[0mop \x1b[0m%2d.%d\x1b[91m:\x1b[33m%s  \x1b[0mresource \x1b[35m%08x\x1b[0m\n", __FILE__,__LINE__,__func__, (ERR)->error_code,XCB_LUT_ERRORS_CSTR[(ERR)->error_code], (ERR)->major_code,(ERR)->minor_code,XCB_LUT_OPCODES_CSTR[(ERR)->major_code], (ERR)->resource_id)
+#define xcb_chk(CONNECTION,COOKIE)  do{  /*@xcb_request_check() returns NULL @ error*/  \
+  typeof(COOKIE) _cookie0 = (COOKIE);                                                   \
+  xcb_void_cookie_t    _cookie1 = *(xcb_void_cookie_t*)&_cookie0;                       \
+  xcb_generic_error_t* _st      = xcb_request_check((CONNECTION),_cookie1);             \
+  if(_st!=NULL){ xcb_show_error(_st); free(_st); }                                      \
+}while(0)
+
 #define xcb_ev_type(event)  (event->response_type &  0b01111111)
 #define xcb_ev_sent(event)  (event->response_type & ~0b01111111)
 xcb_keycode_t xcb_keycode_from_ev(xcb_generic_event_t* ev){  return ((xcb_key_press_event_t*)ev)->detail;  }
@@ -149,7 +156,7 @@ void xcb_meta(xcb_connection_t* connection, int screen_idx){  // xcb_connection_
   printf("\x1b[94mxcb_screen_t      \x1b[0midx \x1b[35m%d  \x1b[0mwhite px \x1b[37m%08x  \x1b[0mblack px \x1b[37m%08x  \x1b[0mpx ndim (\x1b[31m%u\x1b[91m;\x1b[32m%u\x1b[0m)  \x1b[0mmm ndim (\x1b[31m%u\x1b[91m;\x1b[32m%u\x1b[0m)  \x1b[0mvisual 0x\x1b[32m%x  \x1b[0mdepth \x1b[35m%d\x1b[0m\n", screen_idx, screen->white_pixel,screen->black_pixel, screen->width_in_pixels,screen->height_in_pixels, screen->width_in_millimeters,screen->height_in_millimeters, screen->root_visual, screen->root_depth);
   printf("\x1b[94mxcb_setup_t       \x1b[0mbitmap scanline unit \x1b[32m%d  \x1b[0mbitmap scanline pad \x1b[32m%d\x1b[0m\n", setup->bitmap_format_scanline_unit, setup->bitmap_format_scanline_pad);
   printf("\x1b[94mxcb_visualtype_t  \x1b[0mvisualid 0x\x1b[32m%x  \x1b[0mclass \x1b[32m%d  \x1b[0mbits per rgb value \x1b[32m%d  \x1b[0mcolormap nentries \x1b[32m%d\x1b[0m\n", visualtype->visual_id,visualtype->_class,visualtype->bits_per_rgb_value,visualtype->colormap_entries);
-  printf("                  \x1b[0mred mask \x1b[32m%s  \x1b[0mgreen mask \x1b[32m%s  \x1b[0mblue mask \x1b[32m%s\x1b[0m\n", bfmt_u32(visualtype->red_mask),bfmt_u32(visualtype->green_mask),bfmt_u32(visualtype->blue_mask));
+  printf("                  \x1b[0mred mask \x1b[32m%s  \x1b[0mgreen mask \x1b[32m%s  \x1b[0mblue mask \x1b[32m%s\x1b[0m\n", bfmtbe_u32(visualtype->red_mask),bfmtbe_u32(visualtype->green_mask),bfmtbe_u32(visualtype->blue_mask));
   putchar(0x0a);
 }
 
@@ -191,7 +198,6 @@ char* XCB_LUT_IMAGE_FORMATS[] = {
   [XCB_IMAGE_FORMAT_Z_PIXMAP]  = "XCB_IMAGE_FORMAT_Z_PIXMAP",
 };
 
-// ----------------------------------------------------------------------------------------------------------------------------#
 /* Create a low-order bitmask.
 @n   Mask size.
 @ret Mask.
@@ -218,11 +224,10 @@ static __inline xcb_image_format_t xcb_image__effective_format(xcb_image_format_
   return XCB_IMAGE_FORMAT_XY_PIXMAP;
 }
 
-// ----------------------------------------------------------------------------------------------------------------------------#
 static int xcb_image__format_valid(u8 depth, u8 bpp, u8 unit, xcb_image_format_t format, u8 scanline_pad){
   if(depth>bpp) return 0;  // Failure!
 
-  // ----------------------------------------------------------------------------------------------------------------------------#
+  // ----------------------------------------------------------------
   xcb_image_format_t efmt = xcb_image__effective_format(format, bpp);
   switch(efmt){
     // ----------------------------------------------------------------
@@ -263,7 +268,7 @@ static int xcb_image__format_valid(u8 depth, u8 bpp, u8 unit, xcb_image_format_t
     default: return 0;  // Failure!
   }  // END switch(efmt)
 
-  // ----------------------------------------------------------------------------------------------------------------------------#
+  // ----------------------------------------------------------------
   return 1;  // Success!
 }
 
@@ -271,7 +276,6 @@ static int image_format_valid(xcb_image_t* img){
   return xcb_image__format_valid(img->depth, img->bpp, img->unit, img->format, img->scanline_pad);
 }
 
-// ----------------------------------------------------------------------------------------------------------------------------#
 void xcb_image__annotate(xcb_image_t* img){
   xcb_image_format_t efmt = xcb_image__effective_format(img->format, img->bpp);
   switch(efmt){
@@ -290,7 +294,6 @@ void xcb_image__annotate(xcb_image_t* img){
   }
 }
 
-// ----------------------------------------------------------------------------------------------------------------------------#
 xcb_image_t* xcb_image_create(u16 width, u16 height, xcb_image_format_t format, u8 scanline_pad, u8 depth, u8 bpp, u8 unit, xcb_image_order_t byte_order, xcb_image_order_t bit_order, void* base, u32 bytes, u8* data){
   if(unit == 0){
     switch(format){
@@ -313,7 +316,7 @@ xcb_image_t* xcb_image_create(u16 width, u16 height, xcb_image_format_t format, 
   }  // END if(unit == 0)
   if(!xcb_image__format_valid(depth, bpp, unit, format, scanline_pad)) return NULL;
 
-  // ----------------------------------------------------------------------------------------------------------------------------#
+  // ----------------------------------------------------------------
   xcb_image_t* img  = malloc(sizeof(*img));  // malloc() NEVER fails!
   img->width        = width;
   img->height       = height;
@@ -327,7 +330,7 @@ xcb_image_t* xcb_image_create(u16 width, u16 height, xcb_image_format_t format, 
   img->bit_order    = bit_order;
   xcb_image__annotate(img);
 
-  // ----------------------------------------------------------------------------------------------------------------------------#
+  // ----------------------------------------------------------------
   // Ways this function can be called:
   //   - With            data: we fail if bytes isn't large enough, else leave well enough alone.
   //   - With  base and !data: if bytes is zero, we default; otherwise we fail if bytes isn't large enough, else fill in data
@@ -357,23 +360,21 @@ xcb_image_t* xcb_image_create(u16 width, u16 height, xcb_image_format_t format, 
     }  // END if(img->base)
   }  // END if(!img->data)
 
-  // ----------------------------------------------------------------------------------------------------------------------------#
+  // ----------------------------------------------------------------
   if(!img->data || bytes<img->size){
     free(img);
     return NULL;
   }
 
-  // ----------------------------------------------------------------------------------------------------------------------------#
+  // ----------------------------------------------------------------
   return img;
 }
 
-// ----------------------------------------------------------------------------------------------------------------------------#
 void xcb_image_destroy(xcb_image_t* img){
   if(img->base) free(img->base);
   free(img);
 }
 
-// ----------------------------------------------------------------------------------------------------------------------------#
 xcb_image_t* xcb_image_shm_put(xcb_connection_t* connection, xcb_drawable_t draw, xcb_gcontext_t gc, xcb_image_t* image, xcb_shm_segment_info_t shminfo, i16 src_x, i16 src_y, i16 dest_x, i16 dest_y, u16 src_width, u16 src_height, u8 send_event){
   xcb_shm_put_image(connection,draw,gc, image->width,image->height, src_x,src_y,src_width,src_height, dest_x,dest_y, image->depth,image->format, send_event,  shminfo.shmseg,image->data-shminfo.shmaddr);
   return image;
@@ -395,10 +396,9 @@ int xcb_image_shm_get(xcb_connection_t* connection, xcb_drawable_t draw, xcb_ima
   }  // END if(error)
 }
 
-// ----------------------------------------------------------------------------------------------------------------------------#
-xcb_image_t* xcb_img_init(xcb_connection_t* connection, xcb_screen_t* screen, u16 ndim_w,u16 ndim_h, void* data){
+xcb_image_t* xcb_img_ini(xcb_connection_t* connection, xcb_screen_t* screen, u16 ndim_w,u16 ndim_h, void* data){
 #if 1
-  xcb_format_t*      fmt   = xcb_find_format_by_depth(connection, screen->root_depth);  m_check(fmt==NULL,"\x1b[31mxcb_find_format_by_depth\x1b[0m  Can't find suitable xcb_image_t format!");
+  xcb_format_t*      fmt   = xcb_find_format_by_depth(connection, screen->root_depth);  if(fmt==NULL) printf("\x1b[91mFAIL  \x1b[31mxcb_find_format_by_depth\x1b[0m  Can't find suitable xcb_image_t format!\n");
   const xcb_setup_t* setup = xcb_get_setup(connection);
   return xcb_image_create(ndim_w,ndim_h,XCB_IMAGE_FORMAT_Z_PIXMAP, fmt->scanline_pad,fmt->depth,fmt->bits_per_pixel, 0, setup->image_byte_order,XCB_IMAGE_ORDER_LSB_FIRST, NULL,~0,data);  // NOTE! I don't think LSB/MSB makes any diff at all!
 #endif
@@ -407,7 +407,7 @@ xcb_image_t* xcb_img_init(xcb_connection_t* connection, xcb_screen_t* screen, u1
 #endif
 }
 
-void xcb_img_free(xcb_image_t* img){
+void xcb_img_end(xcb_image_t* img){
   xcb_image_destroy(img);  // WARN! This also frees the img->
 }
 
@@ -415,15 +415,13 @@ void xcb_img_meta(xcb_image_t* img){
   m_sep(); printf("META  img  format %u:%s  nbytes %'u  height %u  width %u  stride %u  scanline_pad %2u  depth %2u  bpp %2u  unit %2u  plane_mask 0x%08x\n", img->format, XCB_LUT_IMAGE_FORMATS[img->format], img->size, img->height, img->width, img->stride, img->scanline_pad, img->depth, img->bpp, img->unit, img->plane_mask);
 }
 
-// ----------------------------------------------------------------------------------------------------------------------------#
 typedef struct{
   xcb_connection_t*      connection;
   xcb_shm_segment_info_t info;
   xcb_image_t*           img;
 }xcb_shimg_t;
 
-// ----------------------------------------------------------------------------------------------------------------------------#
-xcb_shimg_t* xcb_shimg_init(xcb_connection_t* connection, xcb_screen_t* screen, u16 img_ndim_w,u16 img_ndim_h,u16 img_depth){
+xcb_shimg_t* xcb_shimg_ini(xcb_connection_t* connection, xcb_screen_t* screen, u16 img_ndim_w,u16 img_ndim_h,u16 img_depth){
   xcb_shimg_t* shimg  = malloc(sizeof(xcb_shimg_t));
   shimg->connection   = connection;
   shimg->info.shmseg  = xcb_generate_id(shimg->connection);
@@ -432,13 +430,13 @@ xcb_shimg_t* xcb_shimg_init(xcb_connection_t* connection, xcb_screen_t* screen, 
   int st              = shmctl(shimg->info.shmid, IPC_RMID, NULL);                                 m_chks(st);                   // Mark the shmem segment to be destroyed after the last process detaches it!
   xcb_shm_attach(shimg->connection, shimg->info.shmseg, shimg->info.shmid, 0);
 
-  shimg->img       = xcb_img_init(connection,screen, img_ndim_w,img_ndim_h, NULL);  // You CAN initialize this with data! BUT @shmat() resets everything and it uses *its own data pointer* anyway, so we must discard @img->data and replace it with @shimg->info.shmaddr!
+  shimg->img       = xcb_img_ini(connection,screen, img_ndim_w,img_ndim_h, NULL);  // You CAN initialize this with data! BUT @shmat() resets everything and it uses *its own data pointer* anyway, so we must discard @img->data and replace it with @shimg->info.shmaddr!
   shimg->img->data = shimg->info.shmaddr;
   return shimg;
 }
 
-void xcb_shimg_free(xcb_shimg_t* shimg){
-  xcb_img_free(shimg->img);
+void xcb_shimg_end(xcb_shimg_t* shimg){
+  xcb_img_end(shimg->img);
   xcb_shm_detach(shimg->connection, shimg->info.shmseg);
   i64 st=shmdt(shimg->info.shmaddr);  m_chks(st);
   free(shimg);
@@ -477,7 +475,7 @@ typedef struct{
   int cdata_malloc;  // A flag that indicates ownership; ie. if we own the data, then we must free it!
 }m_blosc_t;
 
-m_blosc_t* m_blosc_init(u8* compressor, int level, int shuffle, int nthreads){
+m_blosc_t* m_blosc_ini(u8* compressor, int level, int shuffle, int nthreads){
   blosc_init();
   blosc_set_nthreads(nthreads);
   blosc_set_compressor(compressor);  // BLOSC_ALWAYS_SPLIT cuts compression time for zstd by 50% (w/ a small size penalty), but it doesn't reduce decompression time!
@@ -498,7 +496,7 @@ m_blosc_t* m_blosc_init(u8* compressor, int level, int shuffle, int nthreads){
   return blosc;
 }
 
-void m_blosc_free(m_blosc_t* blosc){
+void m_blosc_end(m_blosc_t* blosc){
   blosc_destroy();
   if(blosc->ddata_malloc) free(blosc->ddata);
   // if(blosc->cdata_malloc) free(blosc->cdata);
@@ -535,7 +533,7 @@ void m_blosc_compress(m_blosc_t* blosc, u64 typesize, u64 bdim, void* ddata/*@in
 
   // printf("  dbytes \x1b[32m%'lu\x1b[0m\n", blosc->dbytes);  // printf("%-24s  dbytes \x1b[32m%'lu\x1b[0m\n", "blosc_compress", blosc->dbytes);
   // printf("  cbytes \x1b[94m%'ld\x1b[0m\n", blosc->cbytes);  // printf("%-24s  cbytes \x1b[94m%'ld\x1b[0m\n", "blosc_compress", blosc->cbytes);
-  if(blosc->cbytes<0)  m_exit_fail();
+  if(blosc->cbytes<0) m_fail();
 }
 
 void m_blosc_decompress(m_blosc_t* blosc, u8* cdata/*@input*/, u8* ddata/*@output*/){
@@ -557,8 +555,8 @@ void m_blosc_decompress(m_blosc_t* blosc, u8* cdata/*@input*/, u8* ddata/*@outpu
   // printf("  dbytes    \x1b[32m%'ld\x1b[0m / \x1b[35m%'d\x1b[0m\n", blosc->dbytes, bdim_decompress);
   // printf("  cbytes    \x1b[94m%'ld\x1b[0m\n",                      blosc->cbytes);
   // printf("  blocksize \x1b[33m%'ld\x1b[0m\n",                      blosc->blocksize);  // printf("%-24s  blocksize \x1b[33m%'ld\x1b[0m\n", "blosc_decompress", blosc->blocksize);
-  if(bdim_decompress<0)              m_exit_fail();
-  if(bdim_decompress!=blosc->dbytes) m_exit_fail();
+  if(bdim_decompress<0)              m_fail();
+  if(bdim_decompress!=blosc->dbytes) m_fail();
 }
 
 // ----------------------------------------------------------------------------------------------------------------------------#

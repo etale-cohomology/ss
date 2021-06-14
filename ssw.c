@@ -16,10 +16,10 @@ int main(int nargs, char* args[]){  setlocale(LC_NUMERIC,"");  i64 st;
   int xcb_screen_idx;
   xcb_connection_t* xcb_connection = xcb_connect(NULL, &xcb_screen_idx);  int xcb_st=xcb_connection_has_error(xcb_connection); if(xcb_st>0) printf("\x1b[31mWARN  \x1b[32mxcb  \x1b[91m%s  \x1b[0m\n", XCB_LUT_CONN_ERRORS[xcb_st]);
   xcb_screen_t*     xcb_screen     = xcb_screen_get(xcb_connection, xcb_screen_idx);
-  xcb_shimg_t*      xcb_shimg      = xcb_shimg_init(xcb_connection, xcb_screen, xcb_screen->width_in_pixels, xcb_screen->height_in_pixels,xcb_screen->root_depth==24?32:xcb_screen->root_depth);
+  xcb_shimg_t*      xcb_shimg      = xcb_shimg_ini(xcb_connection, xcb_screen, xcb_screen->width_in_pixels, xcb_screen->height_in_pixels,xcb_screen->root_depth==24?32:xcb_screen->root_depth);
 
   int        nthreads = m_max(sysconf(_SC_NPROCESSORS_ONLN)/2, 1);
-  m_blosc_t* blosc    = m_blosc_init(compressor.name, compressor.level, compressor.shuffle, nthreads);
+  m_blosc_t* blosc    = m_blosc_ini(compressor.name, compressor.level, compressor.shuffle, nthreads);
 
   char imgpath[PATH_MAX+1] = {0x00};
   snprintf(imgpath,PATH_MAX, "ss-%ld.bi", dt_abs()/1000);  // us!
@@ -57,8 +57,8 @@ int main(int nargs, char* args[]){  setlocale(LC_NUMERIC,"");  i64 st;
   printf("\x1b[32mblosc  \x1b[94m%'ld \x1b[91m/ \x1b[0m%'ld \x1b[0mbdim\n", blosc->cbytes,blosc->dbytes);
 
   // ----------------------------------------------------------------------------------------------------------------------------#
-  m_blosc_free(blosc);
-  xcb_shimg_free(xcb_shimg);
+  m_blosc_end(blosc);
+  xcb_shimg_end(xcb_shimg);
   xcb_disconnect(xcb_connection);
-  m_exit_good();
+  exit(0);
 }
